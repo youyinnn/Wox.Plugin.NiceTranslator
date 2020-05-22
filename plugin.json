@@ -1,0 +1,13 @@
+{
+    "ID":"D4D4C44B004D400DB00FE0C00D6C6A6H",
+    "ActionKeyword":"1",                     
+    "Name":"NiceTranslator",
+    "Description":"Translating words or sentences with bing and baidu API.",
+    "Author":"youyinnn",                    
+    "Version":"1.0.0",
+    "Language":"python",
+    "Website":"https://youyinnn.github.io",
+    "IcoPath": "img\\app.ico",
+    "ExecuteFileName":"main.py"
+  }
+  
