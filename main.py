@@ -12,26 +12,36 @@ import hashlib
 import urllib
 import random
 import json
+import os
+from os import path
 
-appid = 'id'
-secretKey = 'key'
+d = path.join(os.getcwd())
 
-httpClient = None
-fromLang = 'auto'
+app_id = ''
+secret_key = ''
 target_languages = [
     'zh', 
     'en',
-    'jp', 
-    'kor' 
 ]
 
-def translate_with_baudi(q, to):
+with open(path.join(d, 'config.json')) as f:
+    read_data = f.read()
+    cfg = json.loads(read_data)
+    app_id = cfg['app_id']
+    secret_key = cfg['secret_key']
+    if cfg.get('target_languages') is not None:
+        target_languages = cfg.get('target_languages')
+
+httpClient = None
+fromLang = 'auto'
+
+def translate_with_baidu(q, to):
     myurl = '/api/trans/vip/translate'
     toLang = to   #译文语种
     salt = random.randint(32768, 65536)
-    sign = appid + q + str(salt) + secretKey
+    sign = app_id + q + str(salt) + secret_key
     sign = hashlib.md5(sign.encode()).hexdigest()
-    myurl = myurl + '?appid=' + appid + '&q=' + urllib.parse.quote(q) + '&from=' + fromLang + '&to=' + toLang + '&salt=' + str(
+    myurl = myurl + '?appid=' + app_id + '&q=' + urllib.parse.quote(q) + '&from=' + fromLang + '&to=' + toLang + '&salt=' + str(
     salt) + '&sign=' + sign
     try:
         httpClient = http.client.HTTPConnection('api.fanyi.baidu.com')
@@ -47,7 +57,7 @@ def translate_with_baudi(q, to):
             httpClient.close()
 
 def get_translate_with_baidu(q, to):
-    if appid is 'id':
+    if app_id is '':
         return {
             'title': '请在main.py代码中填写你的APPID和密钥',
             'subtitle': '百度翻译',
@@ -55,7 +65,11 @@ def get_translate_with_baidu(q, to):
             'to': 'b'
         }
     else :
-        rs = translate_with_baudi(q, to)
+        rs = translate_with_baidu(q, to)
+        if rs.get('error_code') is not None:
+            rs['trans_result'] = [{'dst': rs['error_msg']}]
+            rs['from'] = 'ERROR'
+            rs['to'] = 'Error occur when requesting Baidu API, code: ' + rs['error_code']
         return {
             'title': rs['trans_result'][0]['dst'],
             'subtitle': '百度翻译: ' + rs['from'] + ' to ' + rs['to'],
@@ -156,6 +170,27 @@ def search_in_dictionary_bing(q):
     hd_area_rs = hd_area_pattern.search(html)
 
     if (hd_area_rs is not None):
+        prus_head_pattern = re.compile(r'<div class="hd_prUS b_primtxt">')
+        prus_head_rs = prus_head_pattern.search(html)
+        prus_end_pattern = re.compile(r'<\/div>')
+        current = -1
+        if (prus_head_rs is not None):
+            current = 0
+            prus_end_rs = prus_end_pattern.search(html, prus_head_rs.span()[1])
+            prus_html = html[prus_head_rs.span()[1]:prus_end_rs.span()[0]]
+            prus_html = prus_html.split('美&#160;')
+
+            pr_head_pattern = re.compile(r'<div class="hd_pr b_primtxt">')
+            pr_head_rs = pr_head_pattern.search(html)
+            pr_end_pattern = re.compile(r'<\/div>')
+            pr_end_rs = pr_end_pattern.search(html, pr_head_rs.span()[1])
+            pr_html = html[pr_head_rs.span()[1]:pr_end_rs.span()[0]]
+            pr_html = pr_html.split('英&#160;')
+            finalrs.append({
+                'title': '【发音】：{}；{}'.format(prus_html[1], pr_html[1]),
+                'subtitle': '美式 英式'
+            })
+
         ul_head_pattern = re.compile(r'<ul>')
         ul_head_rs = ul_head_pattern.search(html, hd_area_rs.span()[1])
         # dictionary result handle
@@ -167,7 +202,6 @@ def search_in_dictionary_bing(q):
             buf = []
             parser.feed(list_html, buf)
             buf.insert(0, '\n')
-            current = -1
             for i in buf:
                 if i is '\n':
                     current = current + 1
@@ -303,7 +337,7 @@ class Main(Wox):
       results = []
       if (len(query) == 0):
         results.append({
-            "Title": "Nice Translation",
+            "Title": "Nice Translator",
             "SubTitle": "Please enter word or sentence",
             "IcoPath":"img/app.ico",
         })

@@ -24,27 +24,29 @@ Translate from your sentence to any other languages:
 
 Please fill the `appid` and `secretKey`  before you using the translation feature. You can get them on [Baidu translation open platform](http://api.fanyi.baidu.com/)，and apply the [General Translation API](http://api.fanyi.baidu.com/product/11) service.
 
-Then open the plugin directory and edit the `main.py`, the settings will be at line 16-17:
+Then open the plugin directory and edit the `conifg.json` and fill in the values:
 
 ``` python
-appid = 'id'
-secretKey = 'key'
+{
+    "app_id": "your appid ni baidu fanyi API platform",
+    "secret_key": "your secretKey ni baidu fanyi API platform",
+}
 ```
 
 Then you are good to go.
 
 #### More Language?
 
-By default, the plugin will translate the original sentence to `en/zh`, `jp`, `kor`.
+By default, the plugin will translate the original sentence to `en/zh`.
 
-You can decide what kind of languages you want as the target language by edting the `main.py` at line 21:
+You can decide what kind of languages you want as the target language by edting the `conifg.json`:
 
 ``` python
-target_languages = [
-    'zh', 
-    'en',
-    'jp', 
-    'kor' 
+"target_languages" : [
+    "zh", 
+    "en",
+    "jp", 
+    "kor"
 ]
 ```
 
